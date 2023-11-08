@@ -427,10 +427,8 @@ with open ("F2F_Data.SQL", "a") as f:
         state= state_picker()
         zip = zipcode_generator()
         f.write(f"INSERT INTO users (user_id, user_type, user_password) VALUES ('{email}', '{role}', 'password');\n")
-
         if role == "Farmer":
             f.write(f"INSERT INTO farmers (farmer_id, farmer_name, farmer_phone, farmer_state, farmer_zipcode)\nVALUES('{email}', '{full_name}','{phone}', '{state}', '{zip}');\n")
-
         elif role == "Customer":
             f.write(f"INSERT INTO customers (customer_id, customer_name, customer_phone, customer_state, customer_zipcode)\nVALUES('{email}', '{full_name}','{phone}', '{state}', '{zip}');\n")
         else:
@@ -458,35 +456,103 @@ with open ("F2F_Data.SQL", "a") as f:
             for i in range(round(random.random()*15)):
                 buy_product = randint(0, 1)
                 if buy_product == 1:
-                    product = farmer_inventory.keys()[randint(0, len(farmer_inventory.keys())-1)]
-                    product = products[math.floor(random.random()*len(products))]
-                    if product in farmer_inventory:
-                        options = farmer_inventory[product]
-                        if type(options) == list:
-                            farmer = options[math.floor(random.random()*len(options))]
-                            quantity = math.floor(random.random()*farmer[1])
-                            total = round((random.random()*20)*quantity, 2)
-                            if product in distributor_inventory:
-                                update = distributor_inventory[product].append((person[0], quantity))
-                            else:
-                                distributor_inventory[product]=[(person[0], quantity)]
-                            f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
-                            f.write(f"VALUES('{farmer[0]}', '{person[0]}', 'Farmer & Distributor', '{product}', {quantity}, {total});\n")
-                            farmer_inventory[product]= farmer_inventory[product].remove(farmer)
-                            farmer_inventory[product]= farmer_inventory[product].append((farmer[0], farmer[1]-quantity))
+                    product = list(farmer_inventory.keys())[randint(0, len(list(farmer_inventory.keys()))-1)]
+                    farmer_options = farmer_inventory[product]
+                    farmer = farmer_options[randint(0, len(farmer_options)-1)]
+                    quantity = round(random.random()*farmer[1]) # some % of the farmer's inventory
+                    total = round((random.random()*20)*quantity, 2)
+                    if product in distributor_inventory:
+                        update = distributor_inventory[product].append((person[0], quantity))
+                    else:
+                        distributor_inventory[product]=[(person[0], quantity)]
+                    f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
+                    f.write(f"VALUES('{farmer[0]}', '{person[0]}', 'Farmer & Distributor', '{product}', {quantity}, {total});\n")
+                    
+                    farmer_inventory[product].remove(farmer)
+                    farmer_inventory[product].append((farmer[0], farmer[1]-quantity))
+                   
                 
 with open ("F2F_Data.SQL", "a") as f:
     for person in user_roles_list:
         #customer purchases from distributor 
         if person[1] == "Customer":
-            for i in range(round(random.random())):
+            for i in range(randint(0, 12)):
+                buy_product = randint(0, 1)
+                if buy_product == 1:
+                    product = list(distributor_inventory.keys())[randint(0, len(list(distributor_inventory.keys()))-1)]
+                    distributor_options = distributor_inventory[product]
+                    distributor = distributor_options[randint(0, len(distributor_options)-1)]
+                    quantity = round(math.floor(random.random()*distributor[1]))
+                    total = round((random.random()*20)*quantity, 2)
+                    f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
+                    f.write(f"VALUES('{distributor[0]}', '{person[0]}', 'Distributor & Customer', '{product}', {quantity}, {total});\n")
+                    distributor_inventory[product].remove(distributor)
+                    distributor_inventory[product].append((distributor[0], distributor[1]-quantity))
+
+with open ("F2F_Data.SQL", "a") as f:
+    for person in user_roles_list:
+        if person[1] == "Farmer":
+            for i in range(round(random.random()*20)):
                 product = products[math.floor(random.random()*len(products))]
-                if product in distributor_inventory:
-                    options = distributor_inventory[product]
-                    if type(options) == list:
-                        distributor = options[math.floor(random.random()*len(options))]
-                        quantity = round(math.floor(random.random()*distributor[1]))
-                        total = round((random.random()*20)*quantity, 2)
-                        f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
-                        f.write(f"VALUES('{distributor[0]}', '{person[0]}', 'Distributor & Customer', '{product}', {quantity}, {total});\n")
-                        distributor_inventory[product]= distributor_inventory[product].remove(distributor)
+                quantity = round(random.random()*500)
+                if product in farmer_inventory:
+                    update = farmer_inventory[product].append((person[0], quantity))
+                else:
+                    farmer_inventory[product]=[(person[0], quantity)]
+                f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
+                f.write(f"VALUES('{person[0]}', '{person[0]}', 'Self', '{product}', {quantity}, {0});\n")
+
+with open ("F2F_Data.SQL", "a") as f:
+    for person in user_roles_list:
+        #customer purchases from distributor 
+        if person[1] == "Customer":
+            for i in range(randint(0, 12)):
+                buy_product = randint(0, 1)
+                if buy_product == 1:
+                    product = list(distributor_inventory.keys())[randint(0, len(list(distributor_inventory.keys()))-1)]
+                    distributor_options = distributor_inventory[product]
+                    distributor = distributor_options[randint(0, len(distributor_options)-1)]
+                    quantity = round(math.floor(random.random()*distributor[1]))
+                    total = round((random.random()*20)*quantity, 2)
+                    f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
+                    f.write(f"VALUES('{distributor[0]}', '{person[0]}', 'Distributor & Customer', '{product}', {quantity}, {total});\n")
+                    distributor_inventory[product].remove(distributor)
+                    distributor_inventory[product].append((distributor[0], distributor[1]-quantity))
+
+with open ("F2F_Data.SQL", "a") as f:
+    for person in user_roles_list:
+        #distributor purchases from farmer
+        if person[1] == "Distributor":
+            for i in range(round(random.random()*15)):
+                buy_product = randint(0, 1)
+                if buy_product == 1:
+                    product = list(farmer_inventory.keys())[randint(0, len(list(farmer_inventory.keys()))-1)]
+                    farmer_options = farmer_inventory[product]
+                    farmer = farmer_options[randint(0, len(farmer_options)-1)]
+                    quantity = round(random.random()*farmer[1]) # some % of the farmer's inventory
+                    total = round((random.random()*20)*quantity, 2)
+                    if product in distributor_inventory:
+                        update = distributor_inventory[product].append((person[0], quantity))
+                    else:
+                        distributor_inventory[product]=[(person[0], quantity)]
+                    f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
+                    f.write(f"VALUES('{farmer[0]}', '{person[0]}', 'Farmer & Distributor', '{product}', {quantity}, {total});\n")
+                    farmer_inventory[product].remove(farmer)
+                    farmer_inventory[product].append((farmer[0], farmer[1]-quantity))
+
+with open ("F2F_Data.SQL", "a") as f:
+    for person in user_roles_list:
+        #customer purchases from distributor 
+        if person[1] == "Customer":
+            for i in range(randint(0, 12)):
+                buy_product = randint(0, 1)
+                if buy_product == 1:
+                    product = list(distributor_inventory.keys())[randint(0, len(list(distributor_inventory.keys()))-1)]
+                    distributor_options = distributor_inventory[product]
+                    distributor = distributor_options[randint(0, len(distributor_options)-1)]
+                    quantity = round(math.floor(random.random()*distributor[1]))
+                    total = round((random.random()*20)*quantity, 2)
+                    f.write(f"INSERT INTO transactions(transaction_seller_id, transaction_buyer_id, transaction_type, transaction_product_name, transaction_product_quantity, transaction_total_cost)\n")
+                    f.write(f"VALUES('{distributor[0]}', '{person[0]}', 'Distributor & Customer', '{product}', {quantity}, {total});\n")
+                    distributor_inventory[product].remove(distributor)
+                    distributor_inventory[product].append((distributor[0], distributor[1]-quantity))
