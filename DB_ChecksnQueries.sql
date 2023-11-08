@@ -1,9 +1,20 @@
-select product_name, transaction_seller_id from customer_inventories 
-left join transactions on customer_inventories.customer_id = transactions.transaction_buyer_id
-WHERE transaction_type != 'Self' and customer_id = 'henry.anderson@example.com'
+-- to do 
 
-select transaction_seller_id from transactions where transaction_type = 'Farmer & Distributor' and transaction_buyer_id = 'vincent.hayes@example.com' and transaction_product_name = 'Quinoa'
+select * from farmer_inventories
+select * from customer_inventories 
+where product_quantity = 0 
+-- remove from inventories list if quantities are 0 
 
-select * from farmers where farmer_id = 'zachary.coleman@example.com'
+select * from users --143
+select count(distinct(user_id))from users --143 
 
-select * from users where user_id  = 'ursula.smith@example.com' -- added as a farmer then into customer table 
+-- check for product availability
+select * from distributor_inventories -- select source as farmer, distributor, customer
+where product_name = 'Corn' and product_quantity > 0 --select product name dropdown and quantity
+
+-- check a specific customers items
+select * from customer_inventories
+where customer_id = 'xavier.barnes@example.com' and product_quantity > 0
+
+
+--
