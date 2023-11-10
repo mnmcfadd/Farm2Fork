@@ -16,5 +16,4 @@ where product_name = 'Corn' and product_quantity > 0 --select product name dropd
 select * from customer_inventories
 where customer_id = 'xavier.barnes@example.com' and product_quantity > 0
 
-test
 --
